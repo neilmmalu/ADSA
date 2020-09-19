@@ -48,6 +48,13 @@ void DoublyLinkedList::MergeSortIte(Node* p1, Node* p2) {
 	//If 0 or 1 nodes
 	if (!p1 || !p2 || p1 == p2) return;
 
+	Node* temp1 = p1->previous;
+	Node* temp2 = p2->next;
+	if (temp1) temp1->next = nullptr;
+	if (temp2) temp2->previous = nullptr;
+	p1->previous = nullptr;
+	p2->next = nullptr;
+
 	//Count total number of nodes
 	int count = 1;
 	while (p1 != p2) {
@@ -71,11 +78,10 @@ void DoublyLinkedList::MergeSortIte(Node* p1, Node* p2) {
 	//Gap size increases from 1, 2, 4... to total number of nodes
 	for (int size = 1; size < count; size *= 2) {
 		//start iterating from the head
-		start1 = head;
+		start1 = p1;
 		while (start1) {
 
-			
-			int flag = (start1 == head) ? 1 : 0;
+			int flag = (start1 == p1) ? 1 : 0;
 
 			//Set end1 to end of first list
 			end1 = start1;
@@ -109,7 +115,7 @@ void DoublyLinkedList::MergeSortIte(Node* p1, Node* p2) {
 			while (start1->previous) start1 = start1->previous;
 			while (end2->next) end2 = end2->next;
 
-			if (flag) head = start1;
+			if (flag) p1 = start1;
 			//Add list to appropriate place
 			else {
 				endLast->next = start1;
@@ -124,6 +130,19 @@ void DoublyLinkedList::MergeSortIte(Node* p1, Node* p2) {
 		if(start1) start1->previous = endLast;
 	}
 
+	while (p1->previous) p1 = p1->previous;
+	p2 = p1;
+	while (p2->next) p2 = p2->next;
+
+	if (temp1) {
+		temp1->next = p1;
+		p1->previous = temp1;
+	}
+	if (temp2) {
+		p2->next = temp2;
+		temp2->previous = p2;
+	}
+
 }
 
 /*
@@ -132,6 +151,13 @@ In-place sorting. Values have not been changed. Only nodes have been moved aroun
 void DoublyLinkedList::MergeSortRec(Node* p1, Node* p2) {
 	//0 or 1 nodes
 	if (!p1 || !p2 || p1 == p2) return;
+
+	Node* temp1 = p1->previous;
+	Node* temp2 = p2->next;
+	if (temp1) temp1->next = nullptr;
+	if (temp2) temp2->previous = nullptr;
+	p1->previous = nullptr;
+	p2->next = nullptr;
 
 	Node* slow = p1;
 	Node* fast = p1;
@@ -158,6 +184,18 @@ void DoublyLinkedList::MergeSortRec(Node* p1, Node* p2) {
 	while (p2->next) p2 = p2->next;
 
 	Merge(p1, p3, p4, p2);
+
+	while (p1->previous) p1 = p1->previous;
+	while (p2->next) p2 = p2->next;
+
+	if (temp1) {
+		temp1->next = p1;
+		p1->previous = temp1;
+	}
+	if (temp2) {
+		p2->next = temp2;
+		temp2->previous = p2;
+	}
 
 }
 
@@ -201,31 +239,52 @@ void DoublyLinkedList::InsertionSort(Node* p1, Node* p2) {
 	//0 or 1 nodes
 	if (!p1 || p1 == p2) return;
 
+	Node* temp1 = p1->previous;
+	Node* temp2 = p2->next;
+	if (temp1) temp1->next = nullptr;
+	if (temp2) temp2->previous = nullptr;
+	p1->previous = nullptr;
+	p2->next = nullptr;
+
 	int count = 0;
 	while (p1 != p2) {
 		++count;
 		p2 = p2->previous;
 	}
-
-	Node* temp = p1->next;
+	p2 = tail;
+	Node* n = p1->next;
 	for (int i = 0; i < count; ++i) {
-		Node* curr = temp->next;
-		while (temp->previous && temp->previous->value > temp->value) {
+		Node* c = n->next;
+		while (n->previous && n->previous->value > n->value) {
 
 			//swap temp and temp->prev
-			Node* temp2 = temp->previous;
-			if (temp2->previous) temp2->previous->next = temp;
-			else head = temp;
-			if (temp->next) temp->next->previous = temp2;
-			else tail = temp2;
+			Node* p = n->previous;
+			if (p->previous) p->previous->next = n;
+			else p1 = n;
+			if (p == head) head = n;
+			if (n->next) n->next->previous = p;
+			else p2 = p;
+			if (n == tail) tail = p;
 
-			temp->previous = temp2->previous;
-			temp2->next = temp->next;
+			n->previous = p->previous;
+			p->next = n->next;
 
-			temp->next = temp2;
-			temp2->previous = temp;
+			n->next = p;
+			p->previous = n;
 		}
-		temp = curr;
+		n = c;
+	}
+
+	while (p1->previous) p1 = p1->previous;
+	while (p2->next) p2 = p2->next;
+
+	if (temp1) {
+		temp1->next = p1;
+		p1->previous = temp1;
+	}
+	if (temp2) {
+		p2->next = temp2;
+		temp2->previous = p2;
 	}
 }
 
