@@ -13,59 +13,42 @@ class pos {
 public:
 	//your code.
 	//At each position, among many things, you need to decide how to move to a new position.
-	int x_coord;
-	int y_coord;
-	char letter;
-	pair<int, int> parent;
+	int y_coord; //y_coord goes from 1-8
+	char letter;  //Letter goes from 'a' to 'h'
+
+	bool visited = false;
+	bool inQueue = false;
+	pair<char, int> parent;
 
 	vector<int> x_add = { -1, -2, -2, -1, 1, 2, 2, 1 };
 	vector<int> y_add = { -2, -1, 1, 2, 2, 1, -1, -2 };
 
-	bool visited = false;
-	bool inQueue = false;
+	pos() { pos('a', 0); }
 
-	pos() {
-		pos(0, 0);
-	}
-
-	pos(int i, int j) {
-		this->x_coord = i;
-		this->y_coord = j;
-		this->letter = i + 'a';
+	pos(char x, int y) {
+		this->letter = x;
+		this->y_coord = y;
 	}
 
 	void print() {
-		cout << "(" << letter << ", " << y_coord+1 << ")";
+		cout << "(" << letter << ", " << y_coord << ")";
 	}
 
-	/*
-	Return the next possible position from current position
+	bool isValid(char x, int y) {
+		if (x < 'a' || x > 'h') return false;
+		if (y < 1 || y > 8) return false;
 
-	*/
-	pair<int, int> nextValidPos() {
-		for (int i = 0; i < x_add.size(); ++i) {
-			int newX = x_coord + x_add[i];
-			int newY = y_coord + y_add[i];
-
-			if (isValidPos(newX, newY)) return pair<int, int> (newX, newY);
-		}
-	}
-
-	bool isValidPos(int x, int y) {
-		if (x < 0 || x > 7) return false;
-		if (y < 0 || y > 7) return false;
 		return true;
 	}
 
-	vector<pair<int, int>> allValidPos() {
-		vector<pair<int, int>> result;
+	vector<pair<char, int>> allValidPos() {
+		vector<pair<char, int>> result;
 		for (int i = 0; i < x_add.size(); ++i) {
-			int newX = x_coord + x_add[i];
+			char newX = letter + x_add[i];
 			int newY = y_coord + y_add[i];
 
-			if (isValidPos(newX, newY)) result.push_back(pair<int, int>(newX, newY));
+			if (isValid(newX, newY)) result.push_back(pair<char, int>(newX, newY));
 		}
-
 		return result;
 	}
 
@@ -76,20 +59,16 @@ public:
 void BFS(vector<vector<pos>>& board, pair<char, int> start_pos, pair <char, int> end_pos);
 void DFS_r(vector<vector<pos>>& board, stack<pair<int, int>>& Stack_r, pair<char, int> start_pos, pair <char, int> end_pos);
 void DFS_nr(vector<vector<pos>>& board, pair<char, int> start_pos, pair <char, int> end_pos);
+
+
 int main() {
 	vector<vector<pos>> board(8, vector<pos>(8));// pos b[8][8];
 	//initialize board as you see needed.
 
-	for (int i = 0; i < board.size(); ++i) {
+	//board[0][0] = pos "a8"
+	for (int i = 0; i < board.size(); ++i)
 		for (int j = 0; j < board.size(); ++j)
-			board[i][j] = pos(i, j);
-	}
-
-	/*for (int i = 0; i < board.size(); ++i) {
-		for (int j = 0; j < board.size(); ++j)
-			board[i][j].print();
-		cout << endl;
-	}*/
+			board[i][j] = pos(j + 'a', 8 - i);
 
 	pair<char, int> start_pos, end_pos;
 	cout << "Enter start position --  x is in a ... h and y is in 1 ... 8" << endl;
@@ -100,9 +79,23 @@ int main() {
 
 
 	BFS(board, start_pos, end_pos);
-	//reset board as you see needed
-	DFS_nr(board, start_pos, end_pos);//non-recursive DFS
+	cout << endl;
 
+	//reset board
+	//board[0][0] = pos "a8"
+	for (int i = 0; i < board.size(); ++i)
+		for (int j = 0; j < board.size(); ++j)
+			board[i][j] = pos(j + 'a', 8 - i);
+
+
+	DFS_nr(board, start_pos, end_pos);//non-recursive DFS
+	cout << endl;
+
+	//reset board
+	//board[0][0] = pos "a8"
+	for (int i = 0; i < board.size(); ++i)
+		for (int j = 0; j < board.size(); ++j)
+			board[i][j] = pos(j + 'a', 8 - i);
 
 	stack<pair<int, int>> Stack_r;
 	//reset board and some initial work if you see needed.
@@ -115,53 +108,96 @@ int main() {
 void BFS(vector<vector<pos>>& board, pair<char, int> start_pos, pair <char, int> end_pos) {
 	//Your code
 	//Note that if you can reach the end_pos, print the path otherwise print "No path available!".
-	queue<pos> Q;
-	int start_x = start_pos.first - 'a';
-	int start_y = start_pos.second - 1;
 
-	int end_x = end_pos.first - 'a';
-	int end_y = end_pos.second - 1;
-	Q.push(board[start_x][start_y]);
-
+	queue<pair<char, int>> Q;
+	Q.push(start_pos);
 	while (!Q.empty()) {
-		pos curr = Q.front();
+		auto p = Q.front();
 		Q.pop();
-		int x = curr.x_coord;
-		int y = curr.y_coord;
 
-		if (x == end_x && y == end_y) {
-			while (x != start_x && y != start_y) {
-				board[x][y].print();
+		int x = p.first - 'a';
+		int y = 8 - p.second;
+
+		if (p.first == end_pos.first && p.second == end_pos.second) {
+			while (!(x == start_pos.first - 'a' && y == 8 - start_pos.second)) {
+				board[y][x].print();
 				cout << " <-- ";
-				pair<int, int> parent = board[x][y].parent;
-				x = parent.first;
-				y = parent.second;
+				int newX = board[y][x].parent.first - 'a';
+				int newY = 8 - board[y][x].parent.second;
+				x = newX;
+				y = newY;
 			}
-			board[start_x][start_y].print();
+			board[y][x].print();
 			return;
 		}
 
-		if (!curr.visited) {
-			curr.visited = true;
-			vector<pair<int, int>> neighbors = curr.allValidPos();
-			for (auto p : neighbors){
-				if (!board[p.first][p.second].visited && !board[p.first][p.second].inQueue) {
-					board[p.first][p.second].parent = pair<int, int> (curr.x_coord, curr.y_coord);
-					board[p.first][p.second].inQueue = true;
-					Q.push(board[p.first][p.second]);
+		if (!board[y][x].visited) {
+			board[y][x].visited = true;
+			vector<pair<char, int>> neighbors = board[y][x].allValidPos();
+			for (auto n : neighbors) {
+				int newX = n.first - 'a';
+				int newY = 8 - n.second;
+				if (!board[newY][newX].visited && !board[newY][newX].inQueue) {
+					board[newY][newX].inQueue = true;
+					board[newY][newX].parent = p;
+					Q.push(n);
 				}
 			}
 		}
-	}
 
+
+	}
+	cout << "No path available!" << endl;
 }
 void DFS_r(vector<vector<pos>>& board, stack<pair<int, int>>& Stack_r, pair<char, int> start_pos, pair <char, int> end_pos) {
 	//Your code
 	//Note that if you can reach the end_pos, print the path otherwise print "No path available!".
+
+
 }
 void DFS_nr(vector<vector<pos>>& board, pair<char, int> start_pos, pair <char, int> end_pos) {
 	//Your code
 	//Note that if you can reach the end_pos, print the path otherwise print "No path available!".
+	
+	stack<pair<char, int>> S;
+	S.push(start_pos);
+
+	while (!S.empty()) {
+		auto p = S.top();
+		S.pop();
+
+		int x = p.first - 'a';
+		int y = 8 - p.second;
+
+		if (p.first == end_pos.first && p.second == end_pos.second) {
+			while (!(x == start_pos.first - 'a' && y == 8 - start_pos.second)) {
+				board[y][x].print();
+				cout << " <-- ";
+				int newX = board[y][x].parent.first - 'a';
+				int newY = 8 - board[y][x].parent.second;
+				x = newX;
+				y = newY;
+			}
+			board[y][x].print();
+			return;
+		}
+
+		if (!board[y][x].visited) {
+			board[y][x].visited = true;
+			vector<pair<char, int>> neighbors = board[y][x].allValidPos();
+			for (int i = neighbors.size() - 1; i >= 0; --i) {
+				auto n = neighbors[i];
+				int newX = n.first - 'a';
+				int newY = 8 - n.second;
+				if (!board[newY][newX].visited) {
+					board[newY][newX].parent = p;
+					S.push(n);
+				}
+			}
+		}
+	}
+	cout << "No path available!" << endl;
+	
 }
 
 //The following might not represent a correct run.  It shows the required output format.
