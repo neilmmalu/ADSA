@@ -158,7 +158,7 @@ void BFS(vector<vector<pos>>& board, pair<char, int> start_pos, pair <char, int>
 				if (!board[newY][newX].visited && !board[newY][newX].inQueue) {
 					//Add the neighbor to the queue
 					board[newY][newX].inQueue = true;
-					//Set the parent of the neigbor to the current position
+					//Set the parent of the neigbor as the current position
 					board[newY][newX].parent = p;
 					Q.push(n);
 				}
@@ -169,6 +169,8 @@ void BFS(vector<vector<pos>>& board, pair<char, int> start_pos, pair <char, int>
 	}
 	cout << "No path available!" << endl;
 }
+
+
 void DFS_r(vector<vector<pos>>& board, stack<pair<int, int>>& Stack_r, pair<char, int> start_pos, pair <char, int> end_pos) {
 	//Initially, start position is already in the stack
 	while (!Stack_r.empty()) {
@@ -220,6 +222,8 @@ void DFS_r(vector<vector<pos>>& board, stack<pair<int, int>>& Stack_r, pair<char
 
 	if(!board[endY][endX].visited) cout << "No path available!" << endl;
 }
+
+
 void DFS_nr(vector<vector<pos>>& board, pair<char, int> start_pos, pair <char, int> end_pos) {
 
 	//Push the start position to the queue	
