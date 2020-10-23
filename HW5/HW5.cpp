@@ -96,7 +96,7 @@ void avl_tree::add_node(int i) {
 
     int pattern = 0;
 
-    node* actionNode = height_update(newNode, pattern);
+    node* actionNode = height_update(curr, pattern);
 
     if (actionNode) {
         switch (pattern) {
@@ -151,7 +151,7 @@ void avl_tree::delete_node(int i) {
         }
     }
 
-    cout << del->value << " " << del->height << endl;
+    //cout << del->value << " " << del->height << endl;
 
     node* pred;
     node* parent = nullptr;
@@ -174,13 +174,21 @@ void avl_tree::delete_node(int i) {
         del->r_child = nullptr;
     }
     else {
+        //Condition if height == 2
         pred = del->l_child;
         while (pred->r_child) pred = pred->r_child;
+
+        if (pred->l_child) {
+            node* predParent = pred->parent;
+            if (pred->is_left_child) predParent->l_child = pred->l_child;
+            else predParent->r_child = pred->l_child;
+            pred->l_child->parent = predParent;
+        }
 
         del->value = pred->value;
         parent = pred->parent;
         if (pred->is_right_child) parent->r_child = nullptr;
-        else parent->l_child = nullptr;
+        if (pred->is_left_child && pred->height == 1) parent->l_child = nullptr;
         delete pred;
     }
     node* actionNode;
@@ -212,45 +220,38 @@ void avl_tree::delete_node(int i) {
 }
 
 node* avl_tree::height_update(node* p, int& pattern) {
-    while (true) {
-        if (p == root) return nullptr;
+    while (p) {
 
-        int h1;
-        int h2;
-        node* parent = p->parent;
-        if (p->is_left_child) {
-            h1 = p->height;
-            h2 = (parent->r_child) ? parent->r_child->height : 0;
-        }
-        else {
-            h2 = p->height;
-            h1 = (parent->l_child) ? parent->l_child->height : 0;
-        }
+        int h1 = (p->l_child) ? p->l_child->height : 0;
+        int h2 = (p->r_child) ? p->r_child->height : 0;
 
         int diff = abs(h2 - h1);
 
         if (diff > 1) {
             if (h1 > h2) {
                 //L-L or L-R
-                int l_h = (p->l_child) ? p->l_child->height : 0;
-                int r_h = (p->r_child) ? p->r_child->height : 0;
-                if (l_h > r_h) pattern = 1;
+                node* child = p->l_child;
+                int l_h = (child->l_child) ? child->l_child->height : 0;
+                int r_h = (child->r_child) ? child->r_child->height : 0;
+                if (l_h >= r_h) pattern = 1;
                 else pattern = 2;
             }
             else {
                 //R-L or R-R
-                int l_h = (p->l_child) ? p->l_child->height : 0;
-                int r_h = (p->r_child) ? p->r_child->height : 0;
+                node* child = p->r_child;
+                int l_h = (child->l_child) ? child->l_child->height : 0;
+                int r_h = (child->r_child) ? child->r_child->height : 0;
                 if (l_h > r_h) pattern = 3;
                 else pattern = 4;
             }
-            return parent;
+            return p;
         }
 
-        parent->height = max(h1, h2) + 1;
-        p = parent;
+        p->height = max(h1, h2) + 1;
+        p = p->parent;
 
     }
+    return nullptr;
 }
 
 void avl_tree::in_order_traversal(node* p) {
@@ -375,7 +376,33 @@ int main() {
     t1.in_order_traversal(t1.root);
     t1.add_node(47);
     t1.in_order_traversal(t1.root);
+    t1.delete_node(50);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(30);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(49);
+    t1.in_order_traversal(t1.root);
     t1.delete_node(34);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(34);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(34);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(47);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(49);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(49);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(49);
+    t1.in_order_traversal(t1.root);
+    t1.add_node(33);
+    t1.in_order_traversal(t1.root);
+    t1.add_node(50);
+    t1.in_order_traversal(t1.root);
+    t1.add_node(48);
+    t1.in_order_traversal(t1.root);
+    t1.delete_node(48);
     t1.in_order_traversal(t1.root);
     //t1.in_order_traversal(t1.root);
     //getchar();
